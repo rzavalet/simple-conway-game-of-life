@@ -19,23 +19,20 @@ fn do_step(array: &mut [[[i32;SIZE];SIZE];2], cur_matrix: usize) {
                       array[cur_matrix][i+1][j+1];
 
 
-            array[1 - cur_matrix][i][j] = if array[cur_matrix][i][j] == 1 {
-                if counter < 2 {
-                    0
+            array[1 - cur_matrix][i][j] = match array[cur_matrix][i][j] {
+                1 => {
+                    match counter {
+                        ..= 1  => 0,
+                        2 | 3 => 1,
+                        _     => 0,
+                    }
+                },
+                _ => {
+                    match counter {
+                        3 => 1,
+                        _ => 0,
+                    }
                 }
-                else if counter == 2 || counter == 3 {
-                    1
-                }
-                else {
-                    0
-                }
-
-            }
-            else if counter == 3{
-                1
-            }
-            else {
-                0
             }
         }
     }
