@@ -2,6 +2,7 @@
 
 A simple implementation of game of life in Rust. I just want to learn the basic syntax of Rust. 
 
+![example](https://github.com/rzavalet/simple-conway-game-of-life/blob/main/Simulation.gif)
 
 ## Dependencies
 
