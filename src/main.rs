@@ -59,11 +59,11 @@ fn do_step(array: &mut [[[i32;SIZE];SIZE];2], cur_matrix: usize)
     }
 }
 
-fn init_world(array: &mut [[[i32; SIZE];SIZE];2], rng: &mut rand::rngs::ThreadRng, clear: bool)
+fn init_world(array: &mut [[[i32; SIZE];SIZE];2], cur_matrix: usize, rng: &mut rand::rngs::ThreadRng, clear: bool)
 {
     for i in 0..SIZE {
         for j in 0..SIZE {
-            array[0][i][j] = match clear {
+            array[cur_matrix][i][j] = match clear {
                 true => 0,
                 false => {
                     match rng.gen_range(0..=100) {
@@ -122,7 +122,7 @@ fn main()
 
     let mut canvas = window.into_canvas().build().unwrap();
 
-    init_world(&mut array, &mut rng, false);
+    init_world(&mut array, cur_matrix, &mut rng, false);
 
     let mut event_pump = sdl_context.event_pump().unwrap();
     'running: loop {
@@ -145,14 +145,16 @@ fn main()
                 },
 
                 Event::KeyDown { keycode: Some(Keycode::C), .. } => {
+                    dbg!("Pressed C and paused is {}", paused);
                     if paused {
-                        init_world(&mut array, &mut rng, true);
+                        init_world(&mut array, cur_matrix, &mut rng, true);
                     }
                 },
 
                 Event::KeyDown { keycode: Some(Keycode::R), .. } => {
+                    dbg!("Pressed R and paused is {}", paused);
                     if paused {
-                        init_world(&mut array, &mut rng, false);
+                        init_world(&mut array, cur_matrix, &mut rng, false);
                     }
                 },
 
