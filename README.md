@@ -5,7 +5,7 @@ A simple implementation of game of life in Rust. I just want to learn the basic 
 
 ## Dependencies
 
-Please install the SDL2 library and set the RUSTFLAGS, e.g.:
+Please install the `SDL2` library and set the `RUSTFLAGS`, e.g.:
 
 ```code
 export RUSTFLAGS="-L ${HOME}/opt/sdl2/lib"
