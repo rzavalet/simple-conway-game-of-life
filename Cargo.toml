@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 rand = "0.8.5"
-crossterm = "0.25"
+clearscreen = "2.0.1"
+sdl2 = "0.35.2"
