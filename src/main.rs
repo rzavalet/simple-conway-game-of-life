@@ -8,13 +8,17 @@ use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::rect::Rect;
+use sdl2::render::WindowCanvas;
 
 const FACTOR: u32 = 100;
 const WIDTH: u32 = 9 * FACTOR;
 const HEIGHT: u32 = 9 * FACTOR;
 const SIZE: usize = 50;
+const RECT_WIDTH: i32 = WIDTH as i32 / SIZE as i32;
+const RECT_HEIGHT: i32 = HEIGHT as i32 / SIZE as i32;
 
-fn do_step(array: &mut [[[i32;SIZE];SIZE];2], cur_matrix: usize) {
+fn do_step(array: &mut [[[i32;SIZE];SIZE];2], cur_matrix: usize) 
+{
     let mut counter;
     for i in 0..SIZE {
         for j in 0..SIZE {
@@ -51,7 +55,8 @@ fn do_step(array: &mut [[[i32;SIZE];SIZE];2], cur_matrix: usize) {
     }
 }
 
-fn init_world(array: &mut [[[i32; SIZE];SIZE];2], rng: &mut rand::rngs::ThreadRng) {
+fn init_world(array: &mut [[[i32; SIZE];SIZE];2], rng: &mut rand::rngs::ThreadRng) 
+{
     for i in 0..SIZE {
         for j in 0..SIZE {
             array[0][i][j] = match rng.gen_range(0..=100) {
@@ -62,33 +67,52 @@ fn init_world(array: &mut [[[i32; SIZE];SIZE];2], rng: &mut rand::rngs::ThreadRn
     }
 }
 
+fn render_step(array: &[[[i32; SIZE];SIZE];2], cur_matrix: usize, canvas: &mut WindowCanvas)
+{
+    canvas.set_draw_color(Color::RGB(41, 41, 41));
+    canvas.clear();
 
-fn main() {
+    for i in 0..SIZE {
+        for j in 0.. SIZE {
+            let x: i32 = i as i32 * RECT_WIDTH;
+            let y: i32 = j as i32 * RECT_HEIGHT;
+            let color: Color  = match array[cur_matrix][i][j] {
+                0 => Color::RGB(255, 255, 255),
+                _ => Color::RGB(0, 0, 0),
+            };
+
+            canvas.set_draw_color(color);
+            let _ = canvas.fill_rect(Rect::new(x + 1, y + 1, RECT_WIDTH as u32 - 1, RECT_HEIGHT as u32 - 1));
+        }
+    }
+    canvas.present();
+}
+
+
+fn main() 
+{
     
+    let duration = Duration::from_secs(1);
+
     let mut rng = rand::thread_rng();
     let mut cur_matrix = 0;
     let mut array: [[[i32;SIZE];SIZE];2] = [[[0;SIZE];SIZE];2];
     let mut paused: bool = false;
-    init_world(&mut array, &mut rng);
 
-
-    let duration = Duration::from_secs(1);
 
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
 
-    let window = video_subsystem.window("rust-sdl2 demo", 
+    let window = video_subsystem.window("Game of Life in Rust", 
                                         WIDTH, HEIGHT)
-        .position_centered()
-        .build()
-        .unwrap();
+                                .position_centered()
+                                .build()
+                                .unwrap();
 
     let mut canvas = window.into_canvas().build().unwrap();
 
-    canvas.set_draw_color(Color::RGB(0, 255, 255));
-    canvas.clear();
-    canvas.present();
-
+    init_world(&mut array, &mut rng);
+    do_step(&mut array, cur_matrix);
 
     let mut event_pump = sdl_context.event_pump().unwrap();
     'running: loop {
@@ -112,25 +136,7 @@ fn main() {
         }
 
         do_step(&mut array, cur_matrix);
-        canvas.set_draw_color(Color::RGB(41, 41, 41));
-        canvas.clear();
-
-        let rect_width = WIDTH / SIZE as u32;
-        let rect_height = HEIGHT / SIZE as u32;
-        for i in 0..SIZE {
-            for j in 0.. SIZE {
-                let x: i32 = i as i32 * rect_width as i32;
-                let y: i32 = j as i32 * rect_height as i32;
-                let color: Color  = match array[cur_matrix][i][j] {
-                    0 => Color::RGB(255, 255, 255),
-                    _ => Color::RGB(0, 0, 0),
-                };
-
-                canvas.set_draw_color(color);
-                let _ = canvas.fill_rect(Rect::new(x + 1, y + 1, rect_width - 1, rect_height - 1));
-            }
-        }
-        canvas.present();
+        render_step(&array, cur_matrix, &mut canvas);
 
         cur_matrix = 1 - cur_matrix;
         thread::sleep(duration);
