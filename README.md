@@ -14,7 +14,7 @@ export RUSTFLAGS="-L ${HOME}/opt/sdl2/lib"
 
 ## Build and run
 
-Build as usual:
+Build and run as usual:
 
 ```code
 cargo run
@@ -23,7 +23,7 @@ cargo run
 ## Some key/mouse events
 
 - `q` or `Esc` to exit.
-- `SPACE` to paused the event loop.
+- `SPACE` to pause the event loop.
 - `RETURN` to increase the simulation speed.
 - `C` to clear the world after pausing the loop.
 - `R` to generate a new random initial state after pausing the loop.

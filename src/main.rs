@@ -11,12 +11,12 @@ use sdl2::rect::Rect;
 use sdl2::render::WindowCanvas;
 use sdl2::mouse::MouseButton;
 
-const FACTOR: u32 = 100;
-const WIDTH: u32 = 9 * FACTOR;
-const HEIGHT: u32 = 9 * FACTOR;
+const FACTOR: usize = 100;
+const WIDTH: usize = 9 * FACTOR;
+const HEIGHT: usize = 9 * FACTOR;
 const SIZE: usize = 50;
-const RECT_WIDTH: i32 = WIDTH as i32 / SIZE as i32;
-const RECT_HEIGHT: i32 = HEIGHT as i32 / SIZE as i32;
+const RECT_WIDTH: usize = WIDTH / SIZE;
+const RECT_HEIGHT: usize = HEIGHT / SIZE;
 
 const NORMAL_SPEED: Duration = Duration::from_secs(1);
 const FAST_SPEED: Duration   = Duration::from_millis(50);
@@ -26,7 +26,7 @@ fn do_step(array: &mut [[[i32;SIZE];SIZE];2], cur_matrix: usize)
     let mut counter;
     for i in 0..SIZE {
         for j in 0..SIZE {
-            // Assume the worl is "modular", i.e. the border of one side are connected to the
+            // Assume the world is "modular", i.e. the border of one side is connected to the
             // border on the other side.
             counter =   array[cur_matrix][(i + SIZE - 1) % SIZE][(j + SIZE - 1) % SIZE] +
                         array[cur_matrix][(i + SIZE - 1) % SIZE][(j + SIZE + 0) % SIZE] +
@@ -83,15 +83,15 @@ fn render_step(array: &[[[i32; SIZE];SIZE];2], cur_matrix: usize, canvas: &mut W
 
     for i in 0..SIZE {
         for j in 0.. SIZE {
-            let x: i32 = i as i32 * RECT_WIDTH;
-            let y: i32 = j as i32 * RECT_HEIGHT;
+            let x: usize = i * RECT_WIDTH;
+            let y: usize = j * RECT_HEIGHT;
             let color: Color  = match array[cur_matrix][i][j] {
                 0 => Color::RGB(255, 255, 255),
                 _ => Color::RGB(0, 0, 0),
             };
 
             canvas.set_draw_color(color);
-            let _ = canvas.fill_rect(Rect::new(x + 1, y + 1, RECT_WIDTH as u32 - 1, RECT_HEIGHT as u32 - 1));
+            let _ = canvas.fill_rect(Rect::new(x as i32 + 1, y as i32 + 1, RECT_WIDTH as u32 - 1, RECT_HEIGHT as u32 - 1));
         }
     }
     canvas.present();
@@ -106,8 +106,8 @@ fn main()
     let mut array: [[[i32;SIZE];SIZE];2] = [[[0;SIZE];SIZE];2];
     let mut paused: bool = false;
     let mut clicked: bool = false;
-    let mut current_rect_x: i32 = -1;
-    let mut current_rect_y: i32 = -1;
+    let mut current_rect_x: usize = std::usize::MAX;
+    let mut current_rect_y: usize = std::usize::MAX;
     let mut speed = NORMAL_SPEED;
 
 
@@ -115,7 +115,7 @@ fn main()
     let video_subsystem = sdl_context.video().unwrap();
 
     let window = video_subsystem.window("Game of Life in Rust", 
-                                        WIDTH, HEIGHT)
+                                        WIDTH as u32, HEIGHT as u32)
                                 .position_centered()
                                 .build()
                                 .unwrap();
@@ -145,14 +145,12 @@ fn main()
                 },
 
                 Event::KeyDown { keycode: Some(Keycode::C), .. } => {
-                    dbg!("Pressed C and paused is {}", paused);
                     if paused {
                         init_world(&mut array, cur_matrix, &mut rng, true);
                     }
                 },
 
                 Event::KeyDown { keycode: Some(Keycode::R), .. } => {
-                    dbg!("Pressed R and paused is {}", paused);
                     if paused {
                         init_world(&mut array, cur_matrix, &mut rng, false);
                     }
@@ -163,29 +161,29 @@ fn main()
                     if !paused { break; }
 
                     clicked = true;
-                    let i = (x / RECT_WIDTH) as usize;
-                    let j = (y / RECT_HEIGHT) as usize;
+                    let i = x as usize / RECT_WIDTH;
+                    let j = y as usize / RECT_HEIGHT;
                     array[cur_matrix][i][j] = 1 - array[cur_matrix][i][j];
 
-                    current_rect_x = i as i32;
-                    current_rect_y = j as i32;
+                    current_rect_x = i;
+                    current_rect_y = j;
                 }
 
                 Event::MouseButtonUp { mouse_btn: MouseButton::Left, .. } => {
                     clicked = false;
-                    current_rect_x = -1;
-                    current_rect_y = -1;
+                    current_rect_x = std::usize::MAX;
+                    current_rect_y = std::usize::MAX;
                 }
 
                 Event::MouseMotion {x, y, ..} => {
                     if clicked {
-                        let i = (x / RECT_WIDTH) as usize;
-                        let j = (y / RECT_HEIGHT) as usize;
-                        if (current_rect_x != i as i32) || (current_rect_y != j as i32) {
+                        let i = x as usize / RECT_WIDTH;
+                        let j = y as usize / RECT_HEIGHT;
+                        if (current_rect_x != i) || (current_rect_y != j) {
                             array[cur_matrix][i][j] = 1 - array[cur_matrix][i][j];
 
-                            current_rect_x = i as i32;
-                            current_rect_y = j as i32;
+                            current_rect_x = i;
+                            current_rect_y = j;
                         }
                     }
                 }
